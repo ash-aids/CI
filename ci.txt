@@ -1,0 +1,153 @@
+1. Implement Union, Intersection, Complement and Difference operations on fuzzy sets. Also create fuzzy relations by Cartesian product of any two fuzzy sets and perform max-min composition on any two fuzzy relations.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2.Optimization of genetic algorithm parameter in hybrid genetic algorithm-neural network modelling: Application to spray drying of coconut milk.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+3.Implementation of Clonal selection algorithm using Python.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+4.To apply the artificial immune pattern recognition to perform a task of structure damage Classification.
+
+# Step 1: Import libraries
+# import numpy as np
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import MinMaxScaler
+# from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+# Step 1: Import required libraries
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import accuracy_score
+
+# Step 2: Generate simple dummy data
+# Features: frequency, mode shape, damping
+
+np.random.seed(1)
+
+undamaged = np.random.normal(loc=[1.0, 0.5], scale=0.1, size=(20, 2))
+damaged = np.random.normal(loc=[0.7, 0.7], scale=0.1, size=(20, 2))
+
+X = np.vstack((undamaged, damaged))
+y = np.array([0]*20 + [1]*20)  # 0 = undamaged, 1 = damaged
+
+# Step 3: Normalize the data
+scaler = MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=1)
+
+# Step 4: AIS-like Detector Creation (train only on undamaged data)
+
+self_data = X_train[y_train == 0]
+detectors = []
+
+# Parameters
+num_detectors = 100
+radius = 0.2
+
+# Create detectors that do NOT match self (undamaged)
+for _ in range(num_detectors):
+    while True:
+        candidate = np.random.rand(2)  # same feature size
+        distances = np.linalg.norm(self_data - candidate, axis=1)
+        if np.all(distances > radius):  # not matching any self
+            detectors.append(candidate)
+            break
+
+# Step 5: Prediction using detectors
+
+def predict(sample, detectors, radius):
+    for d in detectors:
+        if np.linalg.norm(sample - d) < radius:
+            return 1  # Detected as damaged
+    return 0  # Otherwise, undamaged
+
+y_pred = [predict(x, detectors, radius) for x in X_test]
+
+# Step 6: Evaluate
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# We trained only on "healthy" structure patterns (undamaged).
+# If any test point gets close to a detector → it’s flagged as damaged.
+
+'''
+Artificial Immune Systems (AIS) are adaptive systems inspired by the human immune system. They use immune concepts such as clonal selection, negative selection, and immune memory to solve problems in pattern recognition, anomaly detection, and classification.
+Application to Structural Damage Classification
+Objective:
+To classify whether a structure (like a building or bridge) is healthy or damaged based on sensor data (e.g., vibration, stress, strain).
+
+Key Concepts:
+Antibodies: Candidate solutions or detectors trained to recognize structural patterns.
+Antigens: Input data (sensor signals from structures) to be classified.
+Affinity: Measures the similarity between antibody and antigen (e.g., Euclidean distance).
+Negative Selection: Filters out antibodies that incorrectly recognize “self” (i.e., healthy structure).
+Clonal Selection: High-affinity antibodies are cloned and mutated to improve recognition ability.
+
+Steps in Damage Classification:
+Data Collection: Get vibration or strain data from the structure using sensors.
+Feature Extraction: Extract meaningful features (e.g., frequency response, modal properties).
+Antibody Generation: Create random detectors (antibodies).
+Affinity Calculation: Compute similarity between antibodies and structural data.
+Training Phase: Apply clonal or negative selection to evolve good classifiers.
+Classification: New data is tested using trained detectors to classify as damaged or not.
+'''
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5.Implement DEAP (Distributed Evolutionary Algorithms) using Python.
+
+pip install deap
+
+import random
+from deap import creator, base, tools, algorithms
+
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+toolbox = base.Toolbox()
+
+toolbox.register("attr_bool", random.randint, 0, 1)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n=100)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+def evalOneMax(individual):
+    return sum(individual),
+
+toolbox.register("evaluate", evalOneMax)
+toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+population = toolbox.population(n=300)
+
+NGEN=40
+for gen in range(NGEN):
+    offspring = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.1)
+    fits = toolbox.map(toolbox.evaluate, offspring)
+    for fit, ind in zip(fits, offspring):
+        ind.fitness.values = fit
+    population = toolbox.select(offspring, k=len(population))
+top10 = tools.selBest(population, k=10)
+
+for ind in top10:
+    print(f"Individual: {ind}, Fitness: {ind.fitness.values[0]}")
+
+
+'''What is DEAP?
+DEAP is a flexible and powerful evolutionary computation framework written in Python. It supports:
+Genetic Algorithms (GA)
+Genetic Programming (GP)
+Evolution Strategies
+Multi-objective optimization (e.g., NSGA-II)
+
+Key DEAP Concepts:
+Creator: Defines data structures (individuals and fitness values).
+Toolbox: Registers evolutionary operators like selection, crossover, mutation, etc.
+Population: Group of individuals (solutions).
+Algorithm: Evolves the population over generations using variation and selection.
+'''
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
