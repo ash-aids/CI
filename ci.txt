@@ -1,0 +1,402 @@
+1. Implement Union, Intersection, Complement and Difference operations on fuzzy sets. Also create fuzzy relations by Cartesian product of any two fuzzy sets and perform max-min composition on any two fuzzy relations.
+
+
+# Define fuzzy sets A and B
+A = {'x1': 0.2, 'x2': 0.5, 'x3': 0.7}
+B = {'x1': 0.6, 'x2': 0.4, 'x3': 0.9}
+
+# Ensure universes are the same
+universe = A.keys()
+
+# Union: max(A(x), B(x))
+union = {x: max(A[x], B[x]) for x in universe}
+
+# Intersection: min(A(x), B(x))
+intersection = {x: min(A[x], B[x]) for x in universe}
+
+# Complement: 1 - A(x)
+complement_A = {x: 1 - A[x] for x in universe}
+complement_B = {x: 1 - B[x] for x in universe}
+
+# Difference: A(x) - B(x) if A(x) > B(x) else 0
+difference = {x: max(A[x] - B[x], 0) for x in universe}
+
+# Print fuzzy set operations
+print("Union:", union)
+print("Intersection:", intersection)
+print("Complement of A:", complement_A)
+print("Complement of B:", complement_B)
+print("Difference (A - B):", difference)
+
+# Define another fuzzy set C for fuzzy relation
+C = {'y1': 0.3, 'y2': 0.8}
+
+# Cartesian Product (Fuzzy Relation R = A × C)
+relation_R = {(x, y): min(A[x], C[y]) for x in A for y in C}
+print("\nFuzzy Relation R (A × C):")
+for pair, val in relation_R.items():
+    print(f"{pair}: {val}")
+
+# Define another fuzzy relation S = B × C
+relation_S = {(x, y): min(B[x], C[y]) for x in B for y in C}
+print("\nFuzzy Relation S (B × C):")
+for pair, val in relation_S.items():
+    print(f"{pair}: {val}")
+
+# Max-Min Composition: R ° S'
+# Let's define a third fuzzy set D and relation T = C × D
+D = {'z1': 0.6, 'z2': 0.9}
+relation_T = {(y, z): min(C[y], D[z]) for y in C for z in D}
+
+# Max-Min Composition of R (A × C) and T (C × D)
+composition = {}
+for x in A:
+    for z in D:
+        values = [min(relation_R[(x, y)], relation_T[(y, z)]) for y in C]
+        composition[(x, z)] = max(values)
+
+print("\nMax-Min Composition of R and T:")
+for pair, val in composition.items():
+    print(f"{pair}: {val}")
+
+"""
+Fuzzy Sets
+A fuzzy set is a set where each element has a degree of membership between 0 and 1. It generalizes the classical notion of a set by allowing partial membership.
+
+Concepts Used:
+
+Let:
+A and B be fuzzy sets over the same universe X
+μ_A(x), μ_B(x) represent the membership values of x in A and B respectively.
+	Union → max(μA(x), μB(x))
+	Intersection → min(μA(x), μB(x))
+	Complement → 1 - μA(x)
+	Difference → max(μA(x) - μB(x), 0)
+
+Let:
+Fuzzy Set A over X
+Fuzzy Set B over Y
+Then the Cartesian product A × B is a fuzzy relation R on X × Y, defined by:
+	Cartesian Product (A × B) → min(μA(x), μB(y))
+
+Given:
+Fuzzy Relation R1 (X → Y): μ_R1(x, y)
+Fuzzy Relation R2 (Y → Z): μ_R2(y, z)
+The composition R = R1 ○ R2 (X → Z) is defined as:
+	Max-Min Composition → max_y [ min(μR(x, y), μS(y, z)) ]
+This is widely used in fuzzy inference systems.
+
+""" 
+ 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2.Optimization of genetic algorithm parameter in hybrid genetic algorithm-neural network modelling: Application to spray drying of coconut milk.
+
+# Importing Libraries
+import numpy as np
+from sklearn.neural_network import MLPRegressor
+from deap import base, creator, tools, algorithms
+
+# Step 1: Defining Neural Network Model
+def create_nn_model(X_train, y_train):
+    model = MLPRegressor(hidden_layer_sizes=(10, 10), max_iter=1000, random_state=42)
+    model.fit(X_train, y_train)
+    return model
+
+# Step 2: Defining Fitness Function for GA
+def evaluate(individual):
+    inlet_temp, feed_flow, atomization_pressure = individual
+    predicted_output = nn_model.predict([[inlet_temp, feed_flow, atomization_pressure]])
+    fitness = predicted_output[0]
+    return fitness,
+
+# Step 3: Setting up GA
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+toolbox = base.Toolbox()
+toolbox.register("attr_float", np.random.uniform, 100, 200)  # Inlet temperature range
+toolbox.register("attr_flow", np.random.uniform, 10, 50)     # Feed flow rate range
+toolbox.register("attr_pressure", np.random.uniform, 1, 5)   # Atomization pressure range
+toolbox.register("individual", tools.initCycle, creator.Individual,
+                 (toolbox.attr_float, toolbox.attr_flow, toolbox.attr_pressure), n=1)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+toolbox.register("evaluate", evaluate)
+toolbox.register("mate", tools.cxBlend, alpha=0.5)
+toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.2)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+# Step 4: Training Sample Data
+X_train = np.array([[150, 30, 3], [160, 35, 4], [170, 40, 2]]) 
+y_train = np.array([0.85, 0.90, 0.80]) 
+nn_model = create_nn_model(X_train, y_train)
+
+# Step 5: Running Genetic Algorithm
+population = toolbox.population(n=50)
+ngen, cxpb, mutpb = 40, 0.7, 0.2
+algorithms.eaSimple(population, toolbox, cxpb, mutpb, ngen, verbose=True)
+
+# Step 6: Extracting Best Solution
+best_individual = tools.selBest(population, k=1)[0]
+print("Best Parameters:", best_individual)
+print("Predicted Powder Yield:", evaluate(best_individual)[0])
+
+"""
+Problem Overview
+Spray drying of coconut milk involves converting liquid into powder while preserving nutritional quality. It's a nonlinear and multivariate process affected by variables like:
+	inlet air temperature
+	feed flow rate
+	feed concentration
+To model and optimize this process, a hybrid Genetic Algorithm (GA)–Neural Network (NN) is used.
+
+What is GA-NN Hybrid Model?
+Neural Network: Learns the relationship between input variables and quality output (e.g., powder yield, moisture content).
+Genetic Algorithm: Optimizes parameters such as weights, learning rate, and architecture of the neural network to improve prediction accuracy.
+
+Parameter Optimization in GA
+Key GA parameters to optimize:
+1. Population Size
+2. Crossover Rate
+3. Mutation Rate
+4. Number of Generations
+These affect convergence speed and solution quality.
+
+Application to Coconut Milk Spray Drying
+1. Data Collection: Process data collected from experiments.
+2. NN Training: Use data to train neural network on process outputs.
+3. GA Optimization:
+	Encode network parameters into chromosomes.
+	Use GA to evolve optimal neural network configuration.
+4. Prediction & Control: Use optimized model to predict and control drying process.
+
+Benefits:
+Better generalization
+Improved model accuracy
+Handles nonlinearity and uncertainty effectively
+
+"""
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+3. Implementation of Clonal selection algorithm using Python.
+
+import numpy as np
+# Step 1: Defining Objective function
+# Example: minimize f(x) = x^2)
+def objective_function(x):
+    return x**2
+
+# Step 2: Clonal Selection Algorithm
+def clonal_selection_algorithm(population_size, num_clones, mutation_rate, num_generations, search_space):
+    # Initialize population
+    population = np.random.uniform(search_space[0], search_space[1], population_size)
+    
+    for generation in range(num_generations):
+        # Evaluate fitness
+        fitness = np.array([objective_function(x) for x in population])
+        
+        # Select best antibodies
+        sorted_indices = np.argsort(fitness)
+        selected_antibodies = population[sorted_indices[:num_clones]]
+        
+        # Clone and mutate
+        clones = np.repeat(selected_antibodies, num_clones)
+        mutations = np.random.normal(0, mutation_rate, clones.shape)
+        clones = clones + mutations
+        clones = np.clip(clones, search_space[0], search_space[1])  # Ensure clones stay within search space
+        
+        # Replace population
+        population = np.concatenate((clones, np.random.uniform(search_space[0], search_space[1], population_size - num_clones)))
+        
+        # Track best solution
+        best_fitness = np.min(fitness)
+        best_solution = population[np.argmin(fitness)]
+        print(f"Generation {generation + 1}: Best Fitness = {best_fitness}, Best Solution = {best_solution}")
+    
+    return best_solution, best_fitness
+
+# Step 3: Setting Parameters
+# Parameters
+population_size = 20
+num_clones = 5
+mutation_rate = 0.1
+num_generations = 50
+search_space = (-10, 10)  # Define the search space for x
+
+# Step 4: Extracting Best Solution
+best_solution, best_fitness = clonal_selection_algorithm(population_size, num_clones, mutation_rate, num_generations, search_space)
+print("\nFinal Result:")
+print(f"Best Solution: {best_solution}")
+print(f"Best Fitness: {best_fitness}")
+
+"""
+What is CSA?
+The Clonal Selection Algorithm is inspired by the immune system’s mechanism of selecting and cloning immune cells (antibodies) that effectively recognize antigens (targets). It's used for optimization and pattern recognition.
+
+Steps in Clonal Selection Algorithm:
+1. Initialize a random population of candidate solutions (antibodies).
+2. Evaluate each solution using a fitness function.
+3. Select the best-performing antibodies based on fitness.
+4. Clone the selected antibodies (more clones for higher fitness).
+5. Mutate the clones inversely proportional to their fitness (i.e., better solutions mutate less).
+6. Re-select the best from mutated clones and original pool.
+7. Replace worst solutions with new random candidates (diversification).
+8. Repeat for a fixed number of generations or until convergence.
+
+Applications:
+Pattern recognition
+Classification
+Optimization
+Anomaly detection
+
+"""
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+4.To apply the artificial immune pattern recognition to perform a task of structure damage Classification.
+
+# Step 1: Import libraries
+# import numpy as np
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# from sklearn.model_selection import train_test_split
+# from sklearn.preprocessing import MinMaxScaler
+# from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+
+# Step 1: Import required libraries
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import accuracy_score
+
+# Step 2: Generate simple dummy data
+# Features: frequency, mode shape, damping
+
+np.random.seed(1)
+
+undamaged = np.random.normal(loc=[1.0, 0.5], scale=0.1, size=(20, 2))
+damaged = np.random.normal(loc=[0.7, 0.7], scale=0.1, size=(20, 2))
+
+X = np.vstack((undamaged, damaged))
+y = np.array([0]*20 + [1]*20)  # 0 = undamaged, 1 = damaged
+
+# Step 3: Normalize the data
+scaler = MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split the data
+X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.3, random_state=1)
+
+# Step 4: AIS-like Detector Creation (train only on undamaged data)
+
+self_data = X_train[y_train == 0]
+detectors = []
+
+# Parameters
+num_detectors = 100
+radius = 0.2
+
+# Create detectors that do NOT match self (undamaged)
+for _ in range(num_detectors):
+    while True:
+        candidate = np.random.rand(2)  # same feature size
+        distances = np.linalg.norm(self_data - candidate, axis=1)
+        if np.all(distances > radius):  # not matching any self
+            detectors.append(candidate)
+            break
+
+# Step 5: Prediction using detectors
+
+def predict(sample, detectors, radius):
+    for d in detectors:
+        if np.linalg.norm(sample - d) < radius:
+            return 1  # Detected as damaged
+    return 0  # Otherwise, undamaged
+
+y_pred = [predict(x, detectors, radius) for x in X_test]
+
+# Step 6: Evaluate
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# We trained only on "healthy" structure patterns (undamaged).
+# If any test point gets close to a detector → it’s flagged as damaged.
+
+'''
+Artificial Immune Systems (AIS) are adaptive systems inspired by the human immune system. They use immune concepts such as clonal selection, negative selection, and immune memory to solve problems in pattern recognition, anomaly detection, and classification.
+Application to Structural Damage Classification
+Objective:
+To classify whether a structure (like a building or bridge) is healthy or damaged based on sensor data (e.g., vibration, stress, strain).
+
+Key Concepts:
+Antibodies: Candidate solutions or detectors trained to recognize structural patterns.
+Antigens: Input data (sensor signals from structures) to be classified.
+Affinity: Measures the similarity between antibody and antigen (e.g., Euclidean distance).
+Negative Selection: Filters out antibodies that incorrectly recognize “self” (i.e., healthy structure).
+Clonal Selection: High-affinity antibodies are cloned and mutated to improve recognition ability.
+
+Steps in Damage Classification:
+Data Collection: Get vibration or strain data from the structure using sensors.
+Feature Extraction: Extract meaningful features (e.g., frequency response, modal properties).
+Antibody Generation: Create random detectors (antibodies).
+Affinity Calculation: Compute similarity between antibodies and structural data.
+Training Phase: Apply clonal or negative selection to evolve good classifiers.
+Classification: New data is tested using trained detectors to classify as damaged or not.
+
+'''
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5.Implement DEAP (Distributed Evolutionary Algorithms) using Python.
+
+pip install deap
+
+import random
+from deap import creator, base, tools, algorithms
+
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+toolbox = base.Toolbox()
+
+toolbox.register("attr_bool", random.randint, 0, 1)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n=100)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+def evalOneMax(individual):
+    return sum(individual),
+
+toolbox.register("evaluate", evalOneMax)
+toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+population = toolbox.population(n=300)
+
+NGEN=40
+for gen in range(NGEN):
+    offspring = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.1)
+    fits = toolbox.map(toolbox.evaluate, offspring)
+    for fit, ind in zip(fits, offspring):
+        ind.fitness.values = fit
+    population = toolbox.select(offspring, k=len(population))
+top10 = tools.selBest(population, k=10)
+
+for ind in top10:
+    print(f"Individual: {ind}, Fitness: {ind.fitness.values[0]}")
+
+
+'''What is DEAP?
+DEAP is a flexible and powerful evolutionary computation framework written in Python. It supports:
+Genetic Algorithms (GA)
+Genetic Programming (GP)
+Evolution Strategies
+Multi-objective optimization (e.g., NSGA-II)
+
+Key DEAP Concepts:
+Creator: Defines data structures (individuals and fitness values).
+Toolbox: Registers evolutionary operators like selection, crossover, mutation, etc.
+Population: Group of individuals (solutions).
+Algorithm: Evolves the population over generations using variation and selection.
+
+'''
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
